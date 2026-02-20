@@ -1,0 +1,32 @@
+# Dependencias
+node_modules/
+dist/
+.npm/
+
+# Variables de entorno (¡MUY IMPORTANTE!)
+.env
+*.env
+!.env.example
+
+# Docker
+.docker/
+
+# Prisma
+/prisma/migrations/
+/prisma/*.db
+/prisma/*.db-journal
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Sistema Operativo
+.DS_Store
+Thumbs.db
+
+# IDEs (VS Code, JetBrains)
+.vscode/
+.idea/
+*.swp
+*.swo

@@ -1,0 +1,40 @@
+// Configuración de conexión
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+// --- MODELOS PARA LA FUNDACIÓN ---
+
+model Usuario {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  password  String
+  nombre    String
+  rol       String   @default("comercial") // Aquí pondrás 'clinica', 'admin', etc.
+  createdAt DateTime @default(now())
+}
+
+model ProyectoComercial {
+  id            String   @id @default(uuid())
+  nombre        String
+  descripcion   String?
+  estado        String   @default("activo")
+  presupuesto   Float    @default(0)
+  fechaInicio   DateTime @default(now())
+  
+  // Relación: Un proyecto puede tener varios aliados
+  aliados       Aliado[]
+}
+
+model Aliado {
+  id            String   @id @default(uuid())
+  nombreEmpresa String
+  contacto      String?
+  proyectoId    String?
+  proyecto      ProyectoComercial? @relation(fields: [proyectoId], references: [id])
+}

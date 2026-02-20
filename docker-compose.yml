@@ -1,0 +1,33 @@
+services:
+  # Servicio de Base de Datos
+  db-calma:
+    image: postgres:15-alpine
+    container_name: calma-postgres-container
+    restart: always
+    environment:
+      POSTGRES_USER: ${DB_USER:-admin_calma}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-calma_secret_2024}
+      POSTGRES_DB: ${DB_NAME:-fundacion_calma_db}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  # Servicio del Backend (NestJS)
+  api-calma:
+    build: .
+    container_name: calma-api-container
+    restart: always
+    ports:
+      - "3000:3000"
+    environment:
+      DATABASE_URL: postgresql://${DB_USER:-admin_calma}:${DB_PASSWORD:-calma_secret_2024}@db-calma:5432/${DB_NAME:-fundacion_calma_db}?schema=public
+      JWT_SECRET: ${JWT_SECRET:-clave_secreta_para_desarrollo}
+    depends_on:
+      - db-calma
+    volumes:
+      - .:/usr/src/app
+      - /usr/src/app/node_modules
+
+volumes:
+  postgres_data:
