@@ -1,40 +1,298 @@
-// Configuración de conexión
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["multiSchema"]
+}
+
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
+  schemas  = ["comercial", "core"]
 }
 
-generator client {
-  provider = "prisma-client-js"
+model analisis_tareas {
+  id             Int       @id @default(autoincrement())
+  area_id        Int?
+  categoria      String    @db.VarChar(50)
+  titulo         String    @db.VarChar(200)
+  subtitulo      String?   @db.VarChar(200)
+  estado         String?   @default("EN PROCESO") @db.VarChar(30)
+  creador_id     Int?
+  fecha_creacion DateTime? @default(now()) @db.Timestamp(6)
+  areas          areas?    @relation(fields: [area_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  usuarios       usuarios? @relation(fields: [creador_id], references: [id], onUpdate: NoAction)
+
+  @@schema("comercial")
 }
 
-// --- MODELOS PARA LA FUNDACIÓN ---
+model convenio_archivos {
+  id             Int        @id @default(autoincrement())
+  convenio_id    Int?
+  subido_por_id  Int?
+  nombre_archivo String     @db.VarChar(255)
+  url_archivo    String
+  fecha_subida   DateTime?  @default(now()) @db.Timestamp(6)
+  convenios      convenios? @relation(fields: [convenio_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  usuarios       usuarios?  @relation(fields: [subido_por_id], references: [id], onUpdate: NoAction)
 
-model Usuario {
-  id        String   @id @default(uuid())
-  email     String   @unique
-  password  String
-  nombre    String
-  rol       String   @default("comercial") // Aquí pondrás 'clinica', 'admin', etc.
-  createdAt DateTime @default(now())
+  @@index([convenio_id], map: "idx_archivos_convenio")
+  @@schema("comercial")
 }
 
-model ProyectoComercial {
-  id            String   @id @default(uuid())
-  nombre        String
-  descripcion   String?
-  estado        String   @default("activo")
-  presupuesto   Float    @default(0)
-  fechaInicio   DateTime @default(now())
-  
-  // Relación: Un proyecto puede tener varios aliados
-  aliados       Aliado[]
+model convenio_comentarios {
+  id             Int        @id @default(autoincrement())
+  convenio_id    Int?
+  usuario_id     Int?
+  comentario     String
+  fecha_creacion DateTime?  @default(now()) @db.Timestamp(6)
+  convenios      convenios? @relation(fields: [convenio_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  usuarios       usuarios?  @relation(fields: [usuario_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([convenio_id], map: "idx_comentarios_convenio")
+  @@schema("comercial")
 }
 
-model Aliado {
-  id            String   @id @default(uuid())
-  nombreEmpresa String
-  contacto      String?
-  proyectoId    String?
-  proyecto      ProyectoComercial? @relation(fields: [proyectoId], references: [id])
+model convenios {
+  id                   Int                    @id @default(autoincrement())
+  area_id              Int?
+  entidad_nombre       String                 @db.VarChar(150)
+  logo_url             String?
+  ruc                  String?                @db.VarChar(20)
+  rubro                String?                @db.VarChar(100)
+  contacto_nombre      String?                @db.VarChar(150)
+  telefono_contacto    String?                @db.VarChar(20)
+  estado               String?                @default("PENDIENTE") @db.VarChar(50)
+  fecha_expiracion     DateTime?              @db.Date
+  creador_id           Int?
+  fecha_creacion       DateTime?              @default(now()) @db.Timestamp(6)
+  convenio_archivos    convenio_archivos[]
+  convenio_comentarios convenio_comentarios[]
+  areas                areas?                 @relation(fields: [area_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  usuarios             usuarios?              @relation(fields: [creador_id], references: [id], onUpdate: NoAction)
+
+  @@index([area_id], map: "idx_convenio_area")
+  @@index([estado], map: "idx_convenios_estado")
+  @@schema("comercial")
+}
+
+model estrategia_tareas {
+  id                                                 Int       @id @default(autoincrement())
+  area_id                                            Int?
+  titulo                                             String    @db.VarChar(255)
+  descripcion                                        String?
+  estado                                             String?   @default("PENDIENTE") @db.VarChar(50)
+  prioridad                                          String?   @db.VarChar(20)
+  fecha_vencimiento                                  DateTime? @db.Date
+  creador_id                                         Int?
+  asignado_a_id                                      Int?
+  fecha_creacion                                     DateTime? @default(now()) @db.Timestamp(6)
+  areas                                              areas?    @relation(fields: [area_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  usuarios_estrategia_tareas_asignado_a_idTousuarios usuarios? @relation("estrategia_tareas_asignado_a_idTousuarios", fields: [asignado_a_id], references: [id], onUpdate: NoAction)
+  usuarios_estrategia_tareas_creador_idTousuarios    usuarios? @relation("estrategia_tareas_creador_idTousuarios", fields: [creador_id], references: [id], onUpdate: NoAction)
+
+  @@index([estado], map: "idx_tareas_estrategia_estado")
+  @@schema("comercial")
+}
+
+model areas {
+  id                  Int                   @id @default(autoincrement())
+  nombre              String                @db.VarChar(30)
+  padre_id            Int?
+  es_externa          Boolean?              @default(false)
+  config_conexion     Json?
+  config_visual       Json?
+  analisis_tareas     analisis_tareas[]
+  convenios           convenios[]
+  estrategia_tareas   estrategia_tareas[]
+  areas               areas?                @relation("areasToareas", fields: [padre_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  other_areas         areas[]               @relation("areasToareas")
+  canales             canales[]
+  permisos_area       permisos_area[]
+  proyectos           proyectos[]
+  publicaciones       publicaciones[]
+  recursos_area       recursos_area[]
+  repositorio_bloques repositorio_bloques[]
+
+  @@index([padre_id], map: "idx_areas_padre")
+  @@schema("core")
+}
+
+model canales {
+  id                  Int                   @id @default(autoincrement())
+  nombre              String?               @db.VarChar(100)
+  area_id             Int?
+  es_grupo            Boolean?              @default(true)
+  fecha_creacion      DateTime?             @default(now()) @db.Timestamp(6)
+  areas               areas?                @relation(fields: [area_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  mensajes            mensajes[]
+  participantes_canal participantes_canal[]
+
+  @@schema("core")
+}
+
+model mensajes {
+  id          Int       @id @default(autoincrement())
+  canal_id    Int?
+  emisor_id   Int?
+  contenido   String
+  archivo_url String?
+  leido       Boolean?  @default(false)
+  creado_at   DateTime? @default(now()) @db.Timestamp(6)
+  canales     canales?  @relation(fields: [canal_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  usuarios    usuarios? @relation(fields: [emisor_id], references: [id], onUpdate: NoAction)
+
+  @@index([canal_id], map: "idx_mensaje_canal")
+  @@index([creado_at], map: "idx_mensajes_fecha")
+  @@schema("core")
+}
+
+model notificaciones {
+  id         Int       @id @default(autoincrement())
+  usuario_id Int?
+  titulo     String    @db.VarChar(150)
+  mensaje    String?
+  leido      Boolean?  @default(false)
+  tipo       String?   @db.VarChar(50)
+  creado_at  DateTime? @default(now()) @db.Timestamp(6)
+  usuarios   usuarios? @relation(fields: [usuario_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([usuario_id], map: "idx_notificaciones_usuario")
+  @@schema("core")
+}
+
+model participantes_canal {
+  canal_id   Int
+  usuario_id Int
+  canales    canales  @relation(fields: [canal_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  usuarios   usuarios @relation(fields: [usuario_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@id([canal_id, usuario_id])
+  @@schema("core")
+}
+
+model permisos_area {
+  id                Int       @id @default(autoincrement())
+  usuario_id        Int?
+  area_id           Int?
+  permitir_subareas Boolean?  @default(true)
+  puede_publicar    Boolean?  @default(false)
+  puede_editar      Boolean?  @default(false)
+  areas             areas?    @relation(fields: [area_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  usuarios          usuarios? @relation(fields: [usuario_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@unique([usuario_id, area_id])
+  @@index([area_id], map: "idx_permiso_area")
+  @@index([usuario_id], map: "idx_permiso_usuario")
+  @@schema("core")
+}
+
+model proyectos {
+  id             Int       @id @default(autoincrement())
+  titulo         String    @db.VarChar(100)
+  tipo           String?   @db.VarChar(50)
+  estado         String?   @default("EN EJECUCION") @db.VarChar(50)
+  fecha_inicio   DateTime? @db.Date
+  fecha_fin      DateTime? @db.Date
+  area_id        Int?
+  responsable_id Int?
+  fecha_creacion DateTime? @default(now()) @db.Timestamp(6)
+  areas          areas?    @relation(fields: [area_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  usuarios       usuarios? @relation(fields: [responsable_id], references: [id], onUpdate: NoAction)
+
+  @@schema("core")
+}
+
+model publicaciones {
+  id                Int       @id @default(autoincrement())
+  area_id           Int?
+  autor_id          Int?
+  titulo            String    @db.VarChar(200)
+  contenido         String?
+  imagen_url        String?
+  fecha_publicacion DateTime? @default(now()) @db.Timestamp(6)
+  areas             areas?    @relation(fields: [area_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  usuarios          usuarios? @relation(fields: [autor_id], references: [id], onUpdate: NoAction)
+
+  @@schema("core")
+}
+
+model recursos_area {
+  id             Int     @id @default(autoincrement())
+  area_id        Int?
+  nombre_recurso String  @db.VarChar(100)
+  url_recurso    String
+  tipo_recurso   String? @db.VarChar(50)
+  icono          String? @db.VarChar(50)
+  areas          areas?  @relation(fields: [area_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([area_id], map: "idx_recursos_area")
+  @@schema("core")
+}
+
+model repositorio_bloques {
+  id                  Int                   @id @default(autoincrement())
+  area_id             Int?
+  titulo              String                @db.VarChar(150)
+  subtitulo           String?               @db.VarChar(150)
+  icono               String?               @db.VarChar(50)
+  url_drive_principal String?
+  creado_por          Int?
+  fecha_creacion      DateTime?             @default(now()) @db.Timestamp(6)
+  areas               areas?                @relation(fields: [area_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  usuarios            usuarios?             @relation(fields: [creado_por], references: [id], onUpdate: NoAction)
+  repositorio_enlaces repositorio_enlaces[]
+
+  @@index([area_id], map: "idx_repositorio_area")
+  @@schema("core")
+}
+
+model repositorio_enlaces {
+  id                  Int                  @id @default(autoincrement())
+  bloque_id           Int?
+  nombre_documento    String               @db.VarChar(255)
+  url_drive           String
+  fecha_agregado      DateTime?            @default(now()) @db.Timestamp(6)
+  repositorio_bloques repositorio_bloques? @relation(fields: [bloque_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([bloque_id], map: "idx_enlaces_bloque")
+  @@schema("core")
+}
+
+model roles {
+  id       Int        @id @default(autoincrement())
+  nombre   String     @unique @db.VarChar(20)
+  usuarios usuarios[]
+
+  @@schema("core")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model usuarios {
+  id                                                          Int                    @id @default(autoincrement())
+  nombre_completo                                             String                 @db.VarChar(30)
+  apellido_completo                                           String                 @db.VarChar(30)
+  email                                                       String                 @unique @db.VarChar(50)
+  telefono                                                    String?                @db.VarChar(20)
+  password_hash                                               String
+  foto_url                                                    String?
+  puesto                                                      String?                @db.VarChar(40)
+  estado                                                      String?                @db.VarChar(50)
+  rol_id                                                      Int?
+  analisis_tareas                                             analisis_tareas[]
+  convenio_archivos                                           convenio_archivos[]
+  convenio_comentarios                                        convenio_comentarios[]
+  convenios                                                   convenios[]
+  estrategia_tareas_estrategia_tareas_asignado_a_idTousuarios estrategia_tareas[]    @relation("estrategia_tareas_asignado_a_idTousuarios")
+  estrategia_tareas_estrategia_tareas_creador_idTousuarios    estrategia_tareas[]    @relation("estrategia_tareas_creador_idTousuarios")
+  mensajes                                                    mensajes[]
+  notificaciones                                              notificaciones[]
+  participantes_canal                                         participantes_canal[]
+  permisos_area                                               permisos_area[]
+  proyectos                                                   proyectos[]
+  publicaciones                                               publicaciones[]
+  repositorio_bloques                                         repositorio_bloques[]
+  roles                                                       roles?                 @relation(fields: [rol_id], references: [id], onUpdate: NoAction)
+
+  @@index([email], map: "idx_usuario_email")
+  @@index([rol_id], map: "idx_usuarios_rol")
+  @@schema("core")
 }

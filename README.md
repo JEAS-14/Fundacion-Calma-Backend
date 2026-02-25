@@ -53,6 +53,21 @@ Si acabas de clonar el repositorio, sigue estos pasos en orden:
 ### 💻 NestJS (Desarrollo)
 * `npm run start:dev` -> Arranca el servidor con recarga automática.
 
+
+### Dependencias Clave del Proyecto (Referencia)
+* Si estás construyendo desde cero o necesitas reinstalar los módulos centrales de seguridad y tiempo real, estos son los comandos exactos que utilizamos en la arquitectura:
+
+### Autenticación y Seguridad (Login, JWT, Passwords):
+
+Bash
+
+npm install @nestjs/jwt @nestjs/passport passport passport-jwt bcrypt
+npm install -D @types/passport-jwt @types/bcrypt
+Comunicaciones y Chat (WebSockets):
+
+Bash
+
+npm install @nestjs/websockets @nestjs/platform-socket.io socket.io
 ---
 
 ## 📂 Estructura del Proyecto
