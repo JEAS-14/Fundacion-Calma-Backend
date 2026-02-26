@@ -16,15 +16,16 @@ async function main() {
 
   // 2. Crear Área Principal (Padre)
   const areaPadre = await prisma.areas.create({
-    data: { nombre: 'Estrategia y Desarrollo Comercial' },
+    // ACORTADO: De 'Estrategia y Desarrollo Comercial' (33) a 'Área Comercial' (14)
+    data: { nombre: 'Área Comercial' }, 
   });
 
   // 3. Crear Sub-áreas
   await prisma.areas.createMany({
     data: [
-      { nombre: 'Estrategia Comercial', padre_id: areaPadre.id },
+      { nombre: 'Estrategia', padre_id: areaPadre.id }, // Acortado
       { nombre: 'Análisis de Datos', padre_id: areaPadre.id },
-      { nombre: 'Desarrollo Comercial', padre_id: areaPadre.id },
+      { nombre: 'Desarrollo', padre_id: areaPadre.id }, // Acortado
     ],
   });
 
@@ -37,7 +38,8 @@ async function main() {
       apellido_completo: 'Flores',
       email: 'dflores@calma.org',
       password_hash: '$2b$10$UnHashDePruebaGeneradoPorBcrypt123', // Luego pondremos un hash real
-      puesto: 'Dir. de Estrategia y Desarrollo Comercial',
+      // ACORTADO: De 'Dir. de Estrategia y Desarrollo Comercial' (41) a 'Director Comercial' (18)
+      puesto: 'Director Comercial', 
       estado: 'ACTIVO',
       rol_id: rolDirector.id,
     },
