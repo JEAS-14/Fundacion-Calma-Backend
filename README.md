@@ -70,6 +70,11 @@ Bash
 npm install @nestjs/websockets @nestjs/platform-socket.io socket.io
 ---
 
+
+#### Subir data por seed.ts
+npx prisma db seed
+
+
 ## 📂 Estructura del Proyecto
 * `/src`: Código fuente de la lógica de negocio (NestJS).
 * `/prisma`: Esquemas y migraciones de la base de datos.
