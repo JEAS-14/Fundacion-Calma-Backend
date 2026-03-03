@@ -37,7 +37,7 @@ async function main() {
       nombre_completo: 'Deivi',
       apellido_completo: 'Flores',
       email: 'dflores@calma.org',
-      password_hash: '$2b$10$UnHashDePruebaGeneradoPorBcrypt123', // Luego pondremos un hash real
+      password_hash: '$2b$10$1wz7zVfAlnwR/YFNeg4QM.L/YzqhdWiw/ZcTYEi4ECQmtkOkhgF4e', // Hash de: calma123
       // ACORTADO: De 'Dir. de Estrategia y Desarrollo Comercial' (41) a 'Director Comercial' (18)
       puesto: 'Director Comercial', 
       estado: 'ACTIVO',
