@@ -1,7 +1,9 @@
 import { Controller, Post, Body, Get, UseGuards, Req } from '@nestjs/common';
 import { AuthService } from '../../application/services/auth.service';
 import { LoginDto } from '../../application/dto/login.dto';
+import { RegisterDto } from '../../application/dto/register.dto';
 import { JwtAuthGuard } from '../guards/jwt-auth.guard';
+import { AdminGuard } from '../guards/admin.guard';
 
 @Controller('auth')
 export class AuthController {
@@ -9,18 +11,23 @@ export class AuthController {
 
   @Post('login')
   async login(@Body() loginDto: LoginDto) {
-    // Recibimos el body y se lo pasamos al servicio
     return await this.authService.login(loginDto.email, loginDto.password);
   }
 
-  // 🔥 NUEVA RUTA PROTEGIDA DE PRUEBA
-  @UseGuards(JwtAuthGuard) // <-- El Guardia intercepta la petición aquí
+  // 📝 REGISTRO - Solo administradores pueden crear nuevos usuarios
+  @UseGuards(JwtAuthGuard, AdminGuard)
+  @Post('register')
+  async register(@Body() registerDto: RegisterDto) {
+    return await this.authService.register(registerDto);
+  }
+
+  // 🔥 RUTA PROTEGIDA DE PRUEBA
+  @UseGuards(JwtAuthGuard)
   @Get('perfil')
   obtenerPerfilProtegido(@Req() req: any) {
-    // Si la petición llega a esta línea, significa que el token es válido
     return {
       mensaje: '¡Acceso autorizado a la zona segura!',
-      usuario: req.user // Aquí viene el ID, email y rol que pusiste en el token
+      usuario: req.user,
     };
   }
 }
