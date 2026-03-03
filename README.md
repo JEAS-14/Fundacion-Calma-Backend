@@ -15,8 +15,11 @@ Este es el núcleo del sistema de la Fundación Calma, desarrollado con una arqu
 Si acabas de clonar el repositorio, sigue estos pasos en orden:
 
 1.  **Instalar dependencias:**
-    ```bash
+    ```## Setup Inicial
+```bash
     npm install
+    npm install @nestjs/config
+    npm install @nestjs/jwt
     ```
 
 2.  **Configurar variables de entorno:**

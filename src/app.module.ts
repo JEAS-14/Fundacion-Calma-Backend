@@ -1,15 +1,19 @@
 import { Module } from '@nestjs/common';
+import { ConfigModule } from '@nestjs/config';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AuthModule } from './modules/auth/auth.module';
-import { ConveniosModule } from './area-estrategia-desarrollo-comercial/convenios/convenios.module';
-import { ConveniosModule } from './modules/area-estrategia-desarrollo-comercial/convenios/convenios.module';
-import { ConvenioModule } from './convenio/convenio.module';
-import { ConveniosModule } from './modules/area-estrategia-desarrollo-comercial/presentation/convenios/convenios.module';
+import { PrismaService } from './infrastructure/prisma/prisma.service';
 
 @Module({
-  imports: [AuthModule, ConveniosModule, ConvenioModule],
+  imports: [
+    ConfigModule.forRoot({
+      isGlobal: true,
+    }),
+    AuthModule,
+  ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [AppService, PrismaService],
+  exports: [PrismaService],
 })
 export class AppModule {}
