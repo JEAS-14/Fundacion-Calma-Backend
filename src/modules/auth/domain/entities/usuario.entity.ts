@@ -9,9 +9,9 @@ export class UsuarioEntity {
   rol_id?: number | null;
   telefono?: string | null;
   foto_url?: string | null;
-  rol?: any; // Relación con roles
+  rol?: { id: number; nombre: string } | null;
 
-  constructor(data: Partial<UsuarioEntity> | any) {
+  constructor(data: Partial<UsuarioEntity>) {
     Object.assign(this, data);
   }
 }
