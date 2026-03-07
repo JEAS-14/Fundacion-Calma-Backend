@@ -6,7 +6,7 @@ import { AuthService } from './application/services/auth.service';
 import { UsuarioRepositoryImpl } from './infrastructure/repositories/usuario.repository.impl';
 import { PrismaService } from '../../infrastructure/prisma/prisma.service';
 import { JwtStrategy } from './infrastructure/strategies/jwt.strategy';
-import { AuthLoggerMiddleware } from './infrastructure/middleware/logger.middleware';
+import { AuthLoggerMiddleware } from './infrastructure/strategies/middleware/logger.middleware';
 import { USUARIO_REPOSITORY } from './domain/repositories/usuario.repository';
 
 @Module({
