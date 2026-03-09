@@ -4,6 +4,9 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AuthModule } from './modules/auth/auth.module';
 import { PrismaService } from './infrastructure/prisma/prisma.service';
+import { ConveniosModule } from './modules/area-estrategia-desarrollo-comercial/convenios/convenios.module';
+import { ConvenioComentariosModule } from './modules/area-estrategia-desarrollo-comercial/convenio_comentarios/convenio_comentarios.module';
+import { ConvenioArchivosModule } from './modules/area-estrategia-desarrollo-comercial/convenio_archivos/convenio_archivos.module';
 
 @Module({
   imports: [
@@ -11,6 +14,9 @@ import { PrismaService } from './infrastructure/prisma/prisma.service';
       isGlobal: true,
     }),
     AuthModule,
+    ConveniosModule,
+    ConvenioComentariosModule,
+    ConvenioArchivosModule,
   ],
   controllers: [AppController],
   providers: [AppService, PrismaService],

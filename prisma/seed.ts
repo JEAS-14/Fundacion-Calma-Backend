@@ -76,19 +76,20 @@ async function main() {
       nombre_completo: 'Deivi',
       apellido_completo: 'Flores',
       email: 'dflores@calma.org',
-      password_hash: '$2b$10$hashDePrueba123456789',
+      password_hash: '$2a$12$fSl2FSe4rFzowY3jW5dj8OWVVpOirw9ybZGvIWxbtX5O/QCvbxO4m',
       puesto: 'Director Comercial',
       estado: 'ACTIVO',
       rol_id: rolDirector.id,
     },
   });
-
+  
   const analistaUser = await prisma.usuarios.create({
     data: {
       nombre_completo: 'Lucía',
       apellido_completo: 'Ramírez',
       email: 'lramirez@calma.org',
-      password_hash: '$2b$10$hashDePruebaAnalista',
+      password_hash:
+        '$2a$12$1J5d/nX9A3cbhsXBypaBI.GKlbC909NFDMGNkLeTkE1eKWozejKPa',
       puesto: 'Analista Comercial',
       estado: 'ACTIVO',
       rol_id: rolAnalista.id,
@@ -100,7 +101,8 @@ async function main() {
       nombre_completo: 'Carlos',
       apellido_completo: 'Torres',
       email: 'ctorres@calma.org',
-      password_hash: '$2b$10$hashDePruebaPracticante',
+      password_hash:
+        '$2a$12$tRh0woyzIN/2cCc3/3UL0eOO56IK/IadJ7zkFtebMhscbbkIA2DAO',
       puesto: 'Practicante Comercial',
       estado: 'ACTIVO',
       rol_id: rolPracticante.id,
