@@ -7,6 +7,7 @@ import {
   UseGuards,
   Request,
   Query,
+  ParseIntPipe, // 🔥 1. IMPORTAMOS ParseIntPipe AQUÍ
 } from '@nestjs/common';
 import { JwtAuthGuard } from '../../../auth/infrastructure/guards/jwt-auth.guard';
 import { PermisosGuard } from '../../../../core/guards/permisos.guard';
@@ -27,7 +28,7 @@ export class ComunidadController {
     private readonly addContactoUseCase: AddContactoUseCase,
     private readonly getContactosUseCase: GetContactosUseCase,
     private readonly areasService: AreasService,
-  ) {}
+  ) { }
 
   @Get('contactos')
   @RequierePermiso(Acciones.VER_CONTACTOS)
@@ -63,12 +64,30 @@ export class ComunidadController {
 
   @Get('areas/:id/acceso')
   @RequierePermiso(Acciones.GESTIONAR_AREAS)
-  async verificarAccesoArea(@Param('id') areaId: number, @Request() req: any) {
+  async verificarAccesoArea(
+    @Param('id', ParseIntPipe) areaId: number, // 🔥 2. AGREGADO AQUÍ
+    @Request() req: any
+  ) {
     const usuarioId = req.user.id;
     const tieneAcceso = await this.areasService.puedeAccederAreaCompleta(
       usuarioId,
       areaId,
     );
     return { tieneAcceso };
+  }
+
+  @Get('usuarios/:id/areas')
+  @RequierePermiso(Acciones.GESTIONAR_AREAS)
+  async getPermisosUsuarioAreas(@Param('id', ParseIntPipe) id: number) { // 🔥 3. AGREGADO AQUÍ
+    return this.areasService.obtenerPermisosAreaUsuario(id);
+  }
+
+  @Post('usuarios/:id/areas')
+  @RequierePermiso(Acciones.GESTIONAR_AREAS)
+  async setPermisosUsuarioAreas(
+    @Param('id', ParseIntPipe) id: number, // 🔥 4. AGREGADO AQUÍ
+    @Body() permisos: Array<{ area_id: number; puede_publicar?: boolean; puede_editar?: boolean; permitir_subareas?: boolean }>,
+  ) {
+    return this.areasService.actualizarPermisosAreaUsuario(id, permisos);
   }
 }

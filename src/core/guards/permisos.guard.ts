@@ -1,6 +1,8 @@
 import { Injectable, CanActivate, ExecutionContext, ForbiddenException } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { PermisosService, Acciones } from '../services/permisos.service';
+// 👇 IMPORTAMOS EL ENUM DE ROLES (ajusta la ruta si es necesario)
+import { RolesFundacion } from '../../modules/auth/domain/enums/roles.enum';
 
 export const PERMISO_KEY = 'permiso';
 export const AREA_KEY = 'areaId';
@@ -15,7 +17,7 @@ export class PermisosGuard implements CanActivate {
   constructor(
     private reflector: Reflector,
     private permisosService: PermisosService,
-  ) {}
+  ) { }
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const permiso = this.reflector.get<PermisoMetadata>(PERMISO_KEY, context.getHandler());
@@ -24,10 +26,17 @@ export class PermisosGuard implements CanActivate {
     }
 
     const request = context.switchToHttp().getRequest();
-    const usuarioId = request.user?.id; // JwtStrategy.validate() retorna { id, email, rol }
+    // JwtStrategy.validate() retorna { id, email, rol }
+    const usuario = request.user;
 
-    if (!usuarioId) {
+    if (!usuario || !usuario.id) {
       throw new ForbiddenException('Usuario no autenticado');
+    }
+
+    // 🔥 LA REGLA DE ORO: EL ADMINISTRADOR TIENE PASE LIBRE 🔥
+    // Si el usuario es Administrador, lo dejamos pasar sin verificar en la base de datos
+    if (usuario.rol === RolesFundacion.ADMIN || usuario.rol === RolesFundacion.ADMINISTRADOR) {
+      return true;
     }
 
     // Obtener areaId de metadata o de request
@@ -37,8 +46,9 @@ export class PermisosGuard implements CanActivate {
       areaId = request.params?.areaId || request.body?.areaId || request.query?.areaId;
     }
 
+    // Si NO es administrador, entonces sí verificamos sus permisos específicos
     const tienePermiso = await this.permisosService.tienePermiso(
-      usuarioId,
+      usuario.id,
       permiso.accion,
       areaId,
     );

@@ -6,7 +6,7 @@ import { IUsuarioRepository } from '../../domain/repositories/usuario.repository
 
 @Injectable()
 export class UsuarioRepositoryImpl implements IUsuarioRepository {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(private readonly prisma: PrismaService) { }
 
   private mapUsuario(usuario: any): UsuarioEntity {
     return new UsuarioEntity({
@@ -45,6 +45,13 @@ export class UsuarioRepositoryImpl implements IUsuarioRepository {
     } as any;
     delete (createData as any).id;
 
+    // 🔥 PREVENCIÓN: Convertimos la fecha si viene en la creación
+    if ((createData as any).fecha_fin_contrato) {
+      (createData as any).fecha_fin_contrato = new Date((createData as any).fecha_fin_contrato);
+    } else {
+      (createData as any).fecha_fin_contrato = null;
+    }
+
     const newUsuario = await this.prisma.usuarios.create({
       data: createData,
       include: { roles: true },
@@ -57,6 +64,15 @@ export class UsuarioRepositoryImpl implements IUsuarioRepository {
       ...usuario,
     } as any;
     delete (updateData as any).id;
+
+    // 🔥 SOLUCIÓN DEL ERROR 500 🔥
+    // Si viene una fecha como texto, la transformamos a objeto Date (ISO-8601)
+    if ((updateData as any).fecha_fin_contrato) {
+      (updateData as any).fecha_fin_contrato = new Date((updateData as any).fecha_fin_contrato);
+    } else {
+      // Si el campo viene vacío o no viene, aseguramos que sea null para Prisma
+      (updateData as any).fecha_fin_contrato = null;
+    }
 
     const updatedUsuario = await this.prisma.usuarios.update({
       where: { id },

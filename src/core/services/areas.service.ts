@@ -160,6 +160,41 @@ export class AreasService {
     return permisoPadre?.permitir_subareas ?? false;
   }
 
+  async obtenerPermisosAreaUsuario(usuarioId: number) {
+    return this.prisma.permisos_area.findMany({
+      where: { usuario_id: usuarioId },
+      select: {
+        area_id: true,
+        puede_publicar: true,
+        puede_editar: true,
+        permitir_subareas: true,
+      },
+    });
+  }
+
+  async actualizarPermisosAreaUsuario(usuarioId: number, permisos: { area_id: number; puede_publicar?: boolean; puede_editar?: boolean; permitir_subareas?: boolean; }[]) {
+    await this.prisma.permisos_area.deleteMany({ where: { usuario_id: usuarioId } });
+
+    if (permisos.length === 0) {
+      return { updated: 0 };
+    }
+
+    const data = permisos.map((permiso) => ({
+      usuario_id: usuarioId,
+      area_id: permiso.area_id,
+      puede_publicar: permiso.puede_publicar ?? false,
+      puede_editar: permiso.puede_editar ?? false,
+      permitir_subareas: permiso.permitir_subareas ?? false,
+    }));
+
+    const result = await this.prisma.permisos_area.createMany({
+      data,
+      skipDuplicates: true,
+    });
+
+    return { updated: result.count };
+  }
+
   /**
    * Obtiene todas las áreas disponibles (para admins),
    * o solo las permitidas para usuarios normales.

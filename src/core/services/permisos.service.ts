@@ -20,7 +20,7 @@ export class PermisosService {
     @Inject(USUARIO_REPOSITORY)
     private readonly usuarioRepository: IUsuarioRepository,
     private readonly prisma: PrismaService,
-  ) {}
+  ) { }
 
   /**
    * Verifica si un usuario tiene permiso para realizar una acción específica.
@@ -79,6 +79,7 @@ export class PermisosService {
         Acciones.EDITAR_CONTACTO,
         Acciones.VER_CONTACTOS,
         Acciones.PUBLICAR_EN_AREA,
+        Acciones.GESTIONAR_AREAS, // <--- agregar aquí
       ],
       [RolesFundacion.COORDINADOR]: [
         Acciones.AGREGAR_CONTACTO,
