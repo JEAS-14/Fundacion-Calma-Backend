@@ -1,17 +1,21 @@
-import { Injectable, Inject, UnauthorizedException, ConflictException, BadRequestException } from '@nestjs/common';
+import { Injectable, Inject, UnauthorizedException, ConflictException, BadRequestException, Logger } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import type { IUsuarioRepository } from '../../domain/repositories/usuario.repository';
 import { USUARIO_REPOSITORY } from '../../domain/repositories/usuario.repository';
 import { RegisterDto } from '../dto/register.dto';
 import { RolesFundacion } from '../../domain/enums/roles.enum';
 import * as bcrypt from 'bcrypt';
+import { EmailService } from '../../../../core/services/email.service';
 
 @Injectable()
 export class AuthService {
+  private readonly logger = new Logger(AuthService.name);
+
   constructor(
     @Inject(USUARIO_REPOSITORY)
     private readonly usuarioRepository: IUsuarioRepository,
     private readonly jwtService: JwtService,
+    private readonly emailService: EmailService,
   ) {}
 
   async login(email: string, passwordPlana: string) {
@@ -23,8 +27,8 @@ export class AuthService {
       throw new UnauthorizedException('Credenciales incorrectas');
     }
 
-    if (usuario.estado && usuario.estado !== 'ACTIVO') {
-      throw new UnauthorizedException('Usuario inactivo');
+    if (!usuario.estado || usuario.estado !== 'ACTIVO') {
+      throw new UnauthorizedException('Cuenta desactivada');
     }
 
     // 3. Comparar la contraseña plana con el hash de la base de datos
@@ -53,6 +57,14 @@ export class AuthService {
     };
   }
 
+  async findAllUsers() {
+    return this.usuarioRepository.findAll();
+  }
+
+  async updateUser(id: number, usuario: Partial<any>) {
+    return this.usuarioRepository.update(id, usuario);
+  }
+
   async register(registerDto: RegisterDto) {
     const configuredDomains = (process.env.ALLOWED_EMAIL_DOMAINS || '')
       .split(',')
@@ -71,15 +83,23 @@ export class AuthService {
       throw new ConflictException('El email ya está registrado');
     }
 
-    // 2. Hash de la contraseña
-    const passwordHash = await bcrypt.hash(registerDto.password, 10);
-
-    const rolPracticante = await this.usuarioRepository.findRoleByName(RolesFundacion.PRACTICANTE);
-    if (!rolPracticante) {
-      throw new BadRequestException('No existe el rol Practicante en la base de datos');
+    // 2. Generar o validar contraseña enviada
+    const plainPassword = registerDto.password?.trim() || this.generateRandomPassword();
+    if (!registerDto.password?.trim()) {
+      this.logger.log(`No se envió contraseña explícita para ${registerDto.email}, se generó temporal.`);
+    }
+    if (plainPassword.length < 6) {
+      throw new BadRequestException('La contraseña debe tener mínimo 6 caracteres');
     }
 
-    // 3. Crear nuevo usuario con rol Practicante por defecto
+    const passwordHash = await bcrypt.hash(plainPassword, 10);
+
+    const rolNombre = registerDto.rol || RolesFundacion.PRACTICANTE;
+    const rol = await this.usuarioRepository.findRoleByName(rolNombre);
+    if (!rol) {
+      throw new BadRequestException(`No existe el rol ${rolNombre} en la base de datos`);
+    }
+
     const nuevoUsuario = await this.usuarioRepository.create({
       email: registerDto.email,
       nombre_completo: registerDto.nombre_completo,
@@ -87,8 +107,20 @@ export class AuthService {
       password_hash: passwordHash,
       puesto: registerDto.puesto || 'Practicante',
       estado: 'ACTIVO',
-      rol_id: rolPracticante.id,
+      rol_id: rol.id,
     });
+
+    try {
+      await this.emailService.sendNewUserNotification(nuevoUsuario.email, {
+        nombre: `${nuevoUsuario.nombre_completo} ${nuevoUsuario.apellido_completo}`,
+        email: nuevoUsuario.email,
+        password: plainPassword,
+        rol: rolNombre,
+      });
+    } catch (emailError) {
+      this.logger.error('Error enviando email de nuevo usuario', emailError as any);
+      // no bloqueamos la creación por el fallo del email; se puede retentar manualmente.
+    }
 
     return {
       mensaje: 'Usuario registrado exitosamente',
@@ -96,7 +128,13 @@ export class AuthService {
         id: nuevoUsuario.id,
         nombre: nuevoUsuario.nombre_completo,
         email: nuevoUsuario.email,
+        rol: rolNombre,
       },
     };
+  }
+
+  private generateRandomPassword(length = 10): string {
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*-_';
+    return Array.from({ length }, () => chars.charAt(Math.floor(Math.random() * chars.length))).join('');
   }
 }

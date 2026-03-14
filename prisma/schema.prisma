@@ -275,7 +275,8 @@ model usuarios {
   password_hash                                               String
   foto_url                                                    String?
   puesto                                                      String?                @db.VarChar(40)
-  estado                                                      String?                @db.VarChar(50)
+  estado                                                      UserEstado            @default(ACTIVO)
+  fecha_fin_contrato                                          DateTime?
   rol_id                                                      Int?
   analisis_tareas                                             analisis_tareas[]
   convenio_archivos                                           convenio_archivos[]
@@ -296,3 +297,11 @@ model usuarios {
   @@index([rol_id], map: "idx_usuarios_rol")
   @@schema("core")
 }
+
+enum UserEstado {
+  ACTIVO
+  INACTIVO
+
+  @@schema("core")
+}
+

@@ -3,29 +3,24 @@ const prisma = new PrismaClient();
 
 async function main() {
   console.log('🌱 Sembrando la base de datos de Fundación Calma...');
+  
   // ===============================
   // 1. LIMPIAR DATA (ORDEN CORRECTO POR FK)
   // ===============================
-
   await prisma.convenio_comentarios.deleteMany();
   await prisma.convenio_archivos.deleteMany();
   await prisma.convenios.deleteMany();
-
   await prisma.mensajes.deleteMany();
   await prisma.participantes_canal.deleteMany();
   await prisma.canales.deleteMany();
-
   await prisma.notificaciones.deleteMany();
   await prisma.publicaciones.deleteMany();
-
   await prisma.repositorio_enlaces.deleteMany();
   await prisma.repositorio_bloques.deleteMany();
   await prisma.recursos_area.deleteMany();
-
   await prisma.analisis_tareas.deleteMany();
   await prisma.estrategia_tareas.deleteMany();
   await prisma.proyectos.deleteMany();
-
   await prisma.permisos_area.deleteMany();
   await prisma.usuarios.deleteMany();
   await prisma.areas.deleteMany();
@@ -34,42 +29,35 @@ async function main() {
   // ===============================
   // 2. ROLES
   // ===============================
-
-  const rolDirector = await prisma.roles.create({
-    data: { nombre: 'Director' },
-  });
-
-  const rolAnalista = await prisma.roles.create({
-    data: { nombre: 'coordinador' },
-  });
-
-  const rolPracticante = await prisma.roles.create({
-    data: { nombre: 'Practicante' },
-  });
+  const rolAdministrador = await prisma.roles.create({ data: { nombre: 'Administrador' } });
+  const rolDirector = await prisma.roles.create({ data: { nombre: 'Director' } });
+  const rolPracticante = await prisma.roles.create({ data: { nombre: 'Practicante' } });
 
   // ===============================
   // 3. ÁREAS
   // ===============================
-
-  const areaPadre = await prisma.areas.create({
-    data: { nombre: 'Área Comercial' },
-  });
+  const areaPadre = await prisma.areas.create({ data: { nombre: 'Área Comercial' } });
 
   const [estrategia, analisis, desarrollo] = await Promise.all([
-    prisma.areas.create({
-      data: { nombre: 'Estrategia', padre_id: areaPadre.id },
-    }),
-    prisma.areas.create({
-      data: { nombre: 'Análisis de Datos', padre_id: areaPadre.id },
-    }),
-    prisma.areas.create({
-      data: { nombre: 'Desarrollo', padre_id: areaPadre.id },
-    }),
+    prisma.areas.create({ data: { nombre: 'Estrategia', padre_id: areaPadre.id } }),
+    prisma.areas.create({ data: { nombre: 'Análisis de Datos', padre_id: areaPadre.id } }),
+    prisma.areas.create({ data: { nombre: 'Desarrollo', padre_id: areaPadre.id } }),
   ]);
 
   // ===============================
   // 4. USUARIOS
   // ===============================
+  const admin = await prisma.usuarios.create({
+    data: {
+      nombre_completo: 'Super',
+      apellido_completo: 'Admin',
+      email: 'admin@calma.org',
+      password_hash: '$2a$12$fSl2FSe4rFzowY3jW5dj8OWVVpOirw9ybZGvIWxbtX5O/QCvbxO4m', // password123
+      puesto: 'Administrador del Sistema',
+      estado: 'ACTIVO',
+      rol_id: rolAdministrador.id,
+    },
+  });
 
   const director = await prisma.usuarios.create({
     data: {
@@ -88,97 +76,80 @@ async function main() {
       nombre_completo: 'Lucía',
       apellido_completo: 'Ramírez',
       email: 'lramirez@calma.org',
-      password_hash:
-        '$2a$12$1J5d/nX9A3cbhsXBypaBI.GKlbC909NFDMGNkLeTkE1eKWozejKPa',
+      password_hash: '$2a$12$1J5d/nX9A3cbhsXBypaBI.GKlbC909NFDMGNkLeTkE1eKWozejKPa',
       puesto: 'Analista Comercial',
       estado: 'ACTIVO',
-      rol_id: rolAnalista.id,
+      rol_id: rolPracticante.id,
     },
   });
 
   const practicante = await prisma.usuarios.create({
     data: {
-      nombre_completo: 'Carlos',
-      apellido_completo: 'Torres',
-      email: 'ctorres@calma.org',
-      password_hash:
-        '$2a$12$tRh0woyzIN/2cCc3/3UL0eOO56IK/IadJ7zkFtebMhscbbkIA2DAO',
-      puesto: 'Practicante Comercial',
+      nombre_completo: 'Usuario',
+      apellido_completo: 'Prueba',
+      email: 'user@calma.org',
+      password_hash: '$2a$12$fSl2FSe4rFzowY3jW5dj8OWVVpOirw9ybZGvIWxbtX5O/QCvbxO4m', // password123
+      puesto: 'Practicante',
       estado: 'ACTIVO',
       rol_id: rolPracticante.id,
     },
   });
 
   // ===============================
-  // 5. PERMISOS
+  // 5. PERMISOS DE ÁREA (Admin global vs Director específico)
   // ===============================
-
   await prisma.permisos_area.createMany({
     data: [
       {
-        usuario_id: director.id,
+        usuario_id: admin.id,
         area_id: areaPadre.id,
-        permitir_subareas: true,
         puede_publicar: true,
         puede_editar: true,
+        permitir_subareas: true,
       },
       {
-        usuario_id: analistaUser.id,
-        area_id: analisis.id,
-        permitir_subareas: false,
+        usuario_id: admin.id,
+        area_id: estrategia.id,
         puede_publicar: true,
         puede_editar: true,
+        permitir_subareas: true,
+      },
+      {
+        usuario_id: admin.id,
+        area_id: analisis.id,
+        puede_publicar: true,
+        puede_editar: true,
+        permitir_subareas: true,
+      },
+      {
+        usuario_id: admin.id,
+        area_id: desarrollo.id,
+        puede_publicar: true,
+        puede_editar: true,
+        permitir_subareas: true,
+      },
+      {
+        usuario_id: director.id,
+        area_id: areaPadre.id,
+        puede_publicar: true,
+        puede_editar: true,
+        permitir_subareas: true,
+      },
+      {
+        usuario_id: practicante.id,
+        area_id: estrategia.id,
+        puede_publicar: true,
+        puede_editar: false,
+        permitir_subareas: false,
       },
     ],
   });
 
-  // ===============================
-  // 6. PROYECTOS
-  // ===============================
-
-  const proyecto1 = await prisma.proyectos.create({
-    data: {
-      titulo: 'Expansión Universitaria 2026',
-      tipo: 'Convenio',
-      estado: 'Activo',
-      fecha_inicio: new Date('2026-01-01'),
-      fecha_fin: new Date('2026-12-31'),
-      area_id: estrategia.id,
-      responsable_id: director.id,
-    },
-  });
+  console.log('👤 Usuarios creados: ' + [admin.email, director.email, practicante.email].join(', '));
 
   // ===============================
-  // 7. CANAL INTERNO
+  // 8. PUBLICACIONES (Asumo que era el bloque 8 por tu código original)
   // ===============================
-
-  const canal = await prisma.canales.create({
-    data: {
-      nombre: 'Canal Estrategia',
-      area_id: estrategia.id,
-      es_grupo: true,
-    },
-  });
-
-  await prisma.participantes_canal.createMany({
-    data: [
-      { canal_id: canal.id, usuario_id: director.id },
-      { canal_id: canal.id, usuario_id: analistaUser.id },
-    ],
-  });
-
-  await prisma.mensajes.create({
-    data: {
-      canal_id: canal.id,
-      emisor_id: director.id,
-      contenido: 'Iniciamos planificación del trimestre.',
-    },
-  });
-
-  // ===============================
-  // 8. PUBLICACIONES
-  // ===============================
-
   await prisma.publicaciones.create({
     data: {
       area_id: areaPadre.id,
@@ -192,7 +163,6 @@ async function main() {
   // ===============================
   // 9. REPOSITORIO BLOQUE
   // ===============================
-
   const bloque = await prisma.repositorio_bloques.create({
     data: {
       area_id: areaPadre.id,
@@ -201,6 +171,7 @@ async function main() {
       creado_por: director.id,
     },
   });
+
   // ===============================
   // 10. REPOSITORIO ENLACES
   // ===============================
@@ -215,7 +186,6 @@ async function main() {
   // ===============================
   // 11. RECURSOS ÁREA
   // ===============================
-
   await prisma.recursos_area.create({
     data: {
       area_id: estrategia.id,
@@ -229,7 +199,6 @@ async function main() {
   // ===============================
   // 12. TAREAS ESTRATEGIA
   // ===============================
-
   await prisma.estrategia_tareas.create({
     data: {
       area_id: estrategia.id,
@@ -246,7 +215,6 @@ async function main() {
   // ===============================
   // 13. NOTIFICACIONES
   // ===============================
-
   await prisma.notificaciones.create({
     data: {
       usuario_id: analistaUser.id,
@@ -260,7 +228,6 @@ async function main() {
   // ===============================
   // 14. DATA CONVENIOS
   // ===============================
-
   const convenioWiener = await prisma.convenios.create({
     data: {
       area_id: areaPadre.id,
@@ -330,126 +297,50 @@ async function main() {
       creador_id: director.id,
     },
   });
+
   // ===============================
   // 15. DATA COMENTARIOS
   // ===============================
   await prisma.convenio_comentarios.createMany({
     data: [
-      {
-        convenio_id: convenioWiener.id,
-        usuario_id: director.id,
-        comentario: 'Se envió propuesta institucional inicial.',
-      },
-      {
-        convenio_id: convenioWiener.id,
-        usuario_id: director.id,
-        comentario: 'Pendiente validación del área legal.',
-      },
-      {
-        convenio_id: convenioBCP.id,
-        usuario_id: director.id,
-        comentario: 'Reunión estratégica realizada con gerencia comercial.',
-      },
-      {
-        convenio_id: convenioClinica.id,
-        usuario_id: director.id,
-        comentario: 'Se solicitó documentación financiera complementaria.',
-      },
-      {
-        convenio_id: convenioColegio.id,
-        usuario_id: director.id,
-        comentario: 'Convenio firmado y archivado correctamente.',
-      },
+      { convenio_id: convenioWiener.id, usuario_id: director.id, comentario: 'Se envió propuesta institucional inicial.' },
+      { convenio_id: convenioWiener.id, usuario_id: director.id, comentario: 'Pendiente validación del área legal.' },
+      { convenio_id: convenioBCP.id, usuario_id: director.id, comentario: 'Reunión estratégica realizada con gerencia comercial.' },
+      { convenio_id: convenioClinica.id, usuario_id: director.id, comentario: 'Se solicitó documentación financiera complementaria.' },
+      { convenio_id: convenioColegio.id, usuario_id: director.id, comentario: 'Convenio firmado y archivado correctamente.' },
     ],
   });
+
   // ===============================
   // 16. DATA ARCHIVOS
   // ===============================
   await prisma.convenio_archivos.createMany({
     data: [
-      {
-        convenio_id: convenioWiener.id,
-        subido_por_id: director.id,
-        nombre_archivo: 'Propuesta_Convenio_Wiener.pdf',
-        url_archivo: 'https://drive.google.com/file/d/propuesta-wiener',
-      },
-      {
-        convenio_id: convenioWiener.id,
-        subido_por_id: director.id,
-        nombre_archivo: 'Carta_Intento_Wiener.docx',
-        url_archivo: 'https://drive.google.com/file/d/carta-intento-wiener',
-      },
-      {
-        convenio_id: convenioBCP.id,
-        subido_por_id: director.id,
-        nombre_archivo: 'Contrato_BCP.pdf',
-        url_archivo: 'https://drive.google.com/file/d/contrato-bcp',
-      },
-      {
-        convenio_id: convenioClinica.id,
-        subido_por_id: director.id,
-        nombre_archivo: 'Propuesta_Clinica.pdf',
-        url_archivo: 'https://drive.google.com/file/d/propuesta-clinica',
-      },
-      {
-        convenio_id: convenioColegio.id,
-        subido_por_id: director.id,
-        nombre_archivo: 'Convenio_Firmado_Colegio.pdf',
-        url_archivo: 'https://drive.google.com/file/d/convenio-firmado-colegio',
-      },
+      { convenio_id: convenioWiener.id, subido_por_id: director.id, nombre_archivo: 'Propuesta_Convenio_Wiener.pdf', url_archivo: 'https://drive.google.com/file/d/propuesta-wiener' },
+      { convenio_id: convenioWiener.id, subido_por_id: director.id, nombre_archivo: 'Carta_Intento_Wiener.docx', url_archivo: 'https://drive.google.com/file/d/carta-intento-wiener' },
+      { convenio_id: convenioBCP.id, subido_por_id: director.id, nombre_archivo: 'Contrato_BCP.pdf', url_archivo: 'https://drive.google.com/file/d/contrato-bcp' },
+      { convenio_id: convenioClinica.id, subido_por_id: director.id, nombre_archivo: 'Propuesta_Clinica.pdf', url_archivo: 'https://drive.google.com/file/d/propuesta-clinica' },
+      { convenio_id: convenioColegio.id, subido_por_id: director.id, nombre_archivo: 'Convenio_Firmado_Colegio.pdf', url_archivo: 'https://drive.google.com/file/d/convenio-firmado-colegio' },
     ],
   });
+
   // ===============================
   // 17. ANALISIS TAREAS
   // ===============================
-
   await prisma.analisis_tareas.createMany({
     data: [
-      {
-        area_id: analisis.id,
-        categoria: 'KPIs',
-        titulo: 'Análisis de conversión de convenios',
-        subtitulo: 'Medir tasa de cierre mensual',
-        estado: 'PENDIENTE',
-        creador_id: director.id,
-      },
-      {
-        area_id: analisis.id,
-        categoria: 'Reporte',
-        titulo: 'Reporte trimestral comercial',
-        subtitulo: 'Resumen estratégico Q1',
-        estado: 'EN PROCESO',
-        creador_id: analistaUser.id,
-      },
-      {
-        area_id: analisis.id,
-        categoria: 'Dashboard',
-        titulo: 'Actualización dashboard convenios',
-        subtitulo: 'Integrar estado y fechas de expiración',
-        estado: 'COMPLETADO',
-        creador_id: analistaUser.id,
-      },
-      {
-        area_id: analisis.id,
-        categoria: 'Seguimiento',
-        titulo: 'Análisis de convenios cancelados',
-        subtitulo: 'Identificar causas recurrentes',
-        estado: 'PENDIENTE',
-        creador_id: director.id,
-      },
-      {
-        area_id: analisis.id,
-        categoria: 'Proyección',
-        titulo: 'Proyección de nuevos convenios 2026',
-        subtitulo: 'Modelo predictivo basado en histórico',
-        estado: 'EN PROCESO',
-        creador_id: analistaUser.id,
-      },
+      { area_id: analisis.id, categoria: 'KPIs', titulo: 'Análisis de conversión de convenios', subtitulo: 'Medir tasa de cierre mensual', estado: 'PENDIENTE', creador_id: director.id },
+      { area_id: analisis.id, categoria: 'Reporte', titulo: 'Reporte trimestral comercial', subtitulo: 'Resumen estratégico Q1', estado: 'EN PROCESO', creador_id: analistaUser.id },
+      { area_id: analisis.id, categoria: 'Dashboard', titulo: 'Actualización dashboard convenios', subtitulo: 'Integrar estado y fechas de expiración', estado: 'COMPLETADO', creador_id: analistaUser.id },
+      { area_id: analisis.id, categoria: 'Seguimiento', titulo: 'Análisis de convenios cancelados', subtitulo: 'Identificar causas recurrentes', estado: 'PENDIENTE', creador_id: director.id },
+      { area_id: analisis.id, categoria: 'Proyección', titulo: 'Proyección de nuevos convenios 2026', subtitulo: 'Modelo predictivo basado en histórico', estado: 'EN PROCESO', creador_id: analistaUser.id },
     ],
   });
-  console.log('✅ Base de datos sembrada con éxito.');
-}
 
+  console.log('✅ Base de datos sembrada con éxito.');
+} // ¡Aquí es donde realmente debe cerrar la función main!
+
+// Solo se llama una vez a main()
 main()
   .catch((e) => {
     console.error(e);

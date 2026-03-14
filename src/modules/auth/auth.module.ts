@@ -8,6 +8,7 @@ import { PrismaService } from '../../infrastructure/prisma/prisma.service';
 import { JwtStrategy } from './infrastructure/strategies/jwt.strategy';
 import { AuthLoggerMiddleware } from './infrastructure/strategies/middleware/logger.middleware';
 import { USUARIO_REPOSITORY } from './domain/repositories/usuario.repository';
+import { EmailService } from '../../core/services/email.service';
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import { USUARIO_REPOSITORY } from './domain/repositories/usuario.repository';
   controllers: [AuthController],
   providers: [
     AuthService,
+    EmailService,
     PrismaService,
     JwtStrategy,
     {
@@ -27,6 +29,7 @@ import { USUARIO_REPOSITORY } from './domain/repositories/usuario.repository';
       useClass: UsuarioRepositoryImpl,
     },
   ],
+  exports: [USUARIO_REPOSITORY],
 })
 export class AuthModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {

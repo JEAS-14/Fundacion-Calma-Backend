@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../../../infrastructure/prisma/prisma.service';
+import { Prisma } from '@prisma/client';
 import { UsuarioEntity } from '../../domain/entities/usuario.entity';
 import { IUsuarioRepository } from '../../domain/repositories/usuario.repository';
 
@@ -39,20 +40,37 @@ export class UsuarioRepositoryImpl implements IUsuarioRepository {
   }
 
   async create(usuario: Partial<UsuarioEntity>): Promise<UsuarioEntity> {
+    const createData: Prisma.usuariosCreateInput = {
+      ...usuario,
+    } as any;
+    delete (createData as any).id;
+
     const newUsuario = await this.prisma.usuarios.create({
-      data: usuario as any,
+      data: createData,
       include: { roles: true },
     });
     return this.mapUsuario(newUsuario);
   }
 
   async update(id: number, usuario: Partial<UsuarioEntity>): Promise<UsuarioEntity> {
+    const updateData: Prisma.usuariosUpdateInput = {
+      ...usuario,
+    } as any;
+    delete (updateData as any).id;
+
     const updatedUsuario = await this.prisma.usuarios.update({
       where: { id },
-      data: usuario,
+      data: updateData,
       include: { roles: true },
     });
     return this.mapUsuario(updatedUsuario);
+  }
+
+  async findAll(): Promise<UsuarioEntity[]> {
+    const usuarios = await this.prisma.usuarios.findMany({
+      include: { roles: true },
+    });
+    return usuarios.map((usuario) => this.mapUsuario(usuario));
   }
 
   async delete(id: number): Promise<void> {
