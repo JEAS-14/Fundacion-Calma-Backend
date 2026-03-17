@@ -32,8 +32,8 @@ export class UsuarioRepositoryImpl implements IUsuarioRepository {
   }
 
   async findRoleByName(nombre: string): Promise<{ id: number; nombre: string } | null> {
-    const rol = await this.prisma.roles.findUnique({
-      where: { nombre },
+    const rol = await this.prisma.roles.findFirst({
+      where: { nombre: { equals: nombre, mode: 'insensitive' } },
       select: { id: true, nombre: true },
     });
     return rol;

@@ -16,7 +16,7 @@ export class AuthService {
     private readonly usuarioRepository: IUsuarioRepository,
     private readonly jwtService: JwtService,
     private readonly emailService: EmailService,
-  ) {}
+  ) { }
 
   async login(email: string, passwordPlana: string) {
     // 1. Buscar el usuario por email
@@ -33,14 +33,14 @@ export class AuthService {
 
     // 3. Comparar la contraseña plana con el hash de la base de datos
     const passwordValida = await bcrypt.compare(passwordPlana, usuario.password_hash);
-    
+
     if (!passwordValida) {
       throw new UnauthorizedException('Credenciales incorrectas');
     }
 
     // 4. Si todo está bien, preparamos la información (Payload) para el Token
-    const payload = { 
-      sub: usuario.id, 
+    const payload = {
+      sub: usuario.id,
       email: usuario.email,
       rol: usuario.rol?.nombre,
     };
@@ -94,10 +94,13 @@ export class AuthService {
 
     const passwordHash = await bcrypt.hash(plainPassword, 10);
 
-    const rolNombre = registerDto.rol || RolesFundacion.PRACTICANTE;
+    const rolValor = (registerDto.rol || RolesFundacion.PRACTICANTE).toString().trim();
+    const rolNombre =
+      rolValor.charAt(0).toUpperCase() + rolValor.slice(1).toLowerCase();
+
     const rol = await this.usuarioRepository.findRoleByName(rolNombre);
     if (!rol) {
-      throw new BadRequestException(`No existe el rol ${rolNombre} en la base de datos`);
+      throw new BadRequestException(`No existe el rol ${rolValor} en la base de datos`);
     }
 
     const nuevoUsuario = await this.usuarioRepository.create({

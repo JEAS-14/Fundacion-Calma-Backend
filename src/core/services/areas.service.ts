@@ -175,7 +175,7 @@ export class AreasService {
   async actualizarPermisosAreaUsuario(usuarioId: number, permisos: { area_id: number; puede_publicar?: boolean; puede_editar?: boolean; permitir_subareas?: boolean; }[]) {
     await this.prisma.permisos_area.deleteMany({ where: { usuario_id: usuarioId } });
 
-    if (permisos.length === 0) {
+    if (!permisos || permisos.length === 0) {
       return { updated: 0 };
     }
 

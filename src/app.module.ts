@@ -4,6 +4,7 @@ import { ConfigModule } from '@nestjs/config';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AuthModule } from './modules/auth/auth.module';
+import { DashboardModule } from './modules/dashboard/dashboard.module';
 import { PrismaService } from './infrastructure/prisma/prisma.service';
 import { ConveniosModule } from './modules/area-estrategia-desarrollo-comercial/convenios/convenios.module';
 import { ConvenioComentariosModule } from './modules/area-estrategia-desarrollo-comercial/convenio_comentarios/convenio_comentarios.module';
@@ -19,6 +20,7 @@ import { ContratoCheckService } from './core/services/contrato-check.service';
     }),
     ScheduleModule.forRoot(),
     AuthModule,
+    DashboardModule,
     ConveniosModule,
     ConvenioComentariosModule,
     ConvenioArchivosModule,
@@ -28,4 +30,4 @@ import { ContratoCheckService } from './core/services/contrato-check.service';
   providers: [AppService, PrismaService, PermisosService, AreasService, ContratoCheckService],
   exports: [PrismaService, PermisosService, AreasService],
 })
-export class AppModule {}
+export class AppModule { }

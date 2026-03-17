@@ -5,7 +5,7 @@ import * as nodemailer from 'nodemailer';
 @Injectable()
 export class EmailService {
   private readonly logger = new Logger(EmailService.name);
-  private transporter: nodemailer.Transporter;
+  private transporter: nodemailer.Transporter | null = null;
 
   constructor(private readonly configService: ConfigService) {
     const host = this.configService.get<string>('EMAIL_HOST');
@@ -18,23 +18,25 @@ export class EmailService {
       this.logger.warn(
         '[EmailService] No se encontraron credenciales SMTP (EMAIL_HOST/EMAIL_USER/EMAIL_PASS). Se deshabilita envío de correos.',
       );
-      // Para desarrollo local se puede usar Ethereal (ver README)
+      // No inicializamos transporter para evitar intentos de login con credenciales vacías.
+      this.transporter = null;
+      return;
     }
 
     this.transporter = nodemailer.createTransport({
-      host: host || 'smtp.ethereal.email',
+      host,
       port,
       secure,
       auth: {
-        user: user || '',
-        pass: pass || '',
+        user,
+        pass,
       },
     });
   }
 
   async sendNewUserNotification(to: string, payload: { nombre: string; email: string; password: string; rol: string }) {
     if (!this.transporter) {
-      this.logger.error('[EmailService] Transporter no inicializado, no se puede enviar email.');
+      this.logger.warn('[EmailService] Transporter no inicializado, envío de email omitido (sin SMTP).');
       return;
     }
 
