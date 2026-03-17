@@ -52,7 +52,8 @@ async function main() {
       nombre_completo: 'Super',
       apellido_completo: 'Admin',
       email: 'admin@calma.org',
-      password_hash: '$2a$12$fSl2FSe4rFzowY3jW5dj8OWVVpOirw9ybZGvIWxbtX5O/QCvbxO4m', // password123
+      password_hash:
+        '$2a$12$C9zbAgk.BQEpFtHGuM4B1u4ZpkXXKez4tA0zeImPTRPG/vnc.iHPS', // admin123
       puesto: 'Administrador del Sistema',
       estado: 'ACTIVO',
       rol_id: rolAdministrador.id,
@@ -64,19 +65,21 @@ async function main() {
       nombre_completo: 'Deivi',
       apellido_completo: 'Flores',
       email: 'dflores@calma.org',
-      password_hash: '$2a$12$fSl2FSe4rFzowY3jW5dj8OWVVpOirw9ybZGvIWxbtX5O/QCvbxO4m',
+      password_hash:
+        '$2a$12$RXx9ZeV7Abocd6leL/tHJOT8YPj6irKX6mC.4569.Fyzsek2qEs4O', // Deivi123
       puesto: 'Director Comercial',
       estado: 'ACTIVO',
       rol_id: rolDirector.id,
     },
   });
-  
+
   const analistaUser = await prisma.usuarios.create({
     data: {
       nombre_completo: 'Lucía',
       apellido_completo: 'Ramírez',
       email: 'lramirez@calma.org',
-      password_hash: '$2a$12$1J5d/nX9A3cbhsXBypaBI.GKlbC909NFDMGNkLeTkE1eKWozejKPa',
+      password_hash:
+        '$2a$12$/AB8hNZCrZM.jIEZhAz0puEbCgK8vyK1WwdKF7zG.oonfASK8yv.K', // Lucia123
       puesto: 'Analista Comercial',
       estado: 'ACTIVO',
       rol_id: rolPracticante.id,
@@ -88,7 +91,8 @@ async function main() {
       nombre_completo: 'Usuario',
       apellido_completo: 'Prueba',
       email: 'user@calma.org',
-      password_hash: '$2a$12$fSl2FSe4rFzowY3jW5dj8OWVVpOirw9ybZGvIWxbtX5O/QCvbxO4m', // password123
+      password_hash:
+        '$2a$12$j3DCpGZWQXL85nvqBJDFoeJlghoKKkj84H6X/rXzfGt1Q5ZwFFmsm', // Prueba123
       puesto: 'Practicante',
       estado: 'ACTIVO',
       rol_id: rolPracticante.id,
@@ -237,6 +241,8 @@ async function main() {
       contacto_nombre: 'María Gómez',
       telefono_contacto: '987654321',
       estado: 'PENDIENTE',
+      tipo: 'EMPRESA_PRIVADA',
+      conexion: 'CONVENIO',
       fecha_expiracion: new Date('2026-12-31'),
       creador_id: director.id,
     },
@@ -251,6 +257,8 @@ async function main() {
       contacto_nombre: 'Carlos Ruiz',
       telefono_contacto: '912345678',
       estado: 'EN PROCESO',
+      tipo: 'EMPRESA_PRIVADA',
+      conexion: 'ALIANZA',
       fecha_expiracion: new Date('2027-05-15'),
       creador_id: director.id,
     },
@@ -265,6 +273,8 @@ async function main() {
       contacto_nombre: 'Ana Torres',
       telefono_contacto: '998877665',
       estado: 'PROCESO DE CONVENIO',
+      tipo: 'EMPRESA_PRIVADA',
+      conexion: 'CONVENIO',
       fecha_expiracion: new Date('2026-08-20'),
       creador_id: director.id,
     },
@@ -279,6 +289,8 @@ async function main() {
       contacto_nombre: 'Luis Mendoza',
       telefono_contacto: '955443322',
       estado: 'REUNIÓN AGENDADA',
+      tipo: 'EMPRESA_PRIVADA',
+      conexion: 'ALIANZA',
       fecha_expiracion: new Date('2025-11-01'),
       creador_id: director.id,
     },
@@ -293,6 +305,8 @@ async function main() {
       contacto_nombre: 'Patricia Salas',
       telefono_contacto: '944556677',
       estado: 'CONVENIO FIRMADO',
+      tipo: 'ASOCIACION_CIVIL',
+      conexion: 'CONVENIO',
       fecha_expiracion: new Date('2028-03-10'),
       creador_id: director.id,
     },

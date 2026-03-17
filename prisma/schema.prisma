@@ -56,12 +56,14 @@ model convenios {
   area_id              Int?
   entidad_nombre       String                 @db.VarChar(150)
   logo_url             String?
-  ruc                  String?                @db.VarChar(20)
+  ruc                  String?                @db.VarChar(11)
   rubro                String?                @db.VarChar(100)
   contacto_nombre      String?                @db.VarChar(150)
-  telefono_contacto    String?                @db.VarChar(20)
-  estado               String?                @default("PENDIENTE") @db.VarChar(50)
+  telefono_contacto    String?                @db.VarChar(9)
+  estado               String?                
   fecha_expiracion     DateTime?              @db.Date
+  tipo                 String?                
+  conexion             String?                  
   creador_id           Int?
   fecha_creacion       DateTime?              @default(now()) @db.Timestamp(6)
   convenio_archivos    convenio_archivos[]

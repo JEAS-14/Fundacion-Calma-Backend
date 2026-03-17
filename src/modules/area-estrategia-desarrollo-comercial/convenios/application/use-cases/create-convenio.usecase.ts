@@ -18,6 +18,8 @@ export class CreateConvenioUseCase {
       dto.contactoNombre,
       dto.telefonoContacto,
       dto.estado,
+      dto.tipo,
+      dto.conexion,
       dto.fechaExpiracion,
       dto.creadorId,
       new Date(),

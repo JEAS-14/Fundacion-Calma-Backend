@@ -1,9 +1,13 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../../../../infrastructure/prisma/prisma.service';
 import { Convenio } from '../../domain/entities/convenio.entity';
+import { ConexionConvenio } from '../../domain/enums/conexion-convenio.enum';
+import { EstadoConvenio } from '../../domain/enums/estado-convenio.enum';
+import { TipoConvenio } from '../../domain/enums/tipo-convenio.enum';
+import { ConvenioRepository } from '../../domain/repositories/convenio.repository';
 
 @Injectable()
-export class PrismaConvenioRepository {
+export class PrismaConvenioRepository implements ConvenioRepository {
   constructor(private readonly prisma: PrismaService) {}
 
   async create(convenio: Convenio): Promise<Convenio> {
@@ -17,6 +21,8 @@ export class PrismaConvenioRepository {
         contacto_nombre: convenio.contactoNombre,
         telefono_contacto: convenio.telefonoContacto,
         estado: convenio.estado,
+        tipo: convenio.tipo,
+        conexion: convenio.conexion,
         fecha_expiracion: convenio.fechaExpiracion
           ? new Date(convenio.fechaExpiracion)
           : null,
@@ -33,7 +39,9 @@ export class PrismaConvenioRepository {
       created.rubro ?? '',
       created.contacto_nombre ?? '',
       created.telefono_contacto ?? '',
-      created.estado ?? '',
+      (created.estado as EstadoConvenio) ?? convenio.estado ?? null,
+      (created.tipo as TipoConvenio) ?? convenio.tipo ?? null,
+      (created.conexion as ConexionConvenio) ?? convenio.conexion ?? null,
       created.fecha_expiracion ?? new Date(),
       created.creador_id as number,
       created.fecha_creacion ?? new Date(),
@@ -54,7 +62,9 @@ export class PrismaConvenioRepository {
           c.rubro ?? '',
           c.contacto_nombre ?? '',
           c.telefono_contacto ?? '',
-          c.estado ?? '',
+          (c.estado as EstadoConvenio) ?? null,
+          (c.tipo as TipoConvenio) ?? null,
+          (c.conexion as ConexionConvenio) ?? null,
           c.fecha_expiracion ?? new Date(),
           c.creador_id as number,
           c.fecha_creacion ?? new Date(),
@@ -78,7 +88,9 @@ export class PrismaConvenioRepository {
       convenio.rubro ?? '',
       convenio.contacto_nombre ?? '',
       convenio.telefono_contacto ?? '',
-      convenio.estado ?? '',
+      (convenio.estado as EstadoConvenio) ?? null,
+      (convenio.tipo as TipoConvenio) ?? null,
+      (convenio.conexion as ConexionConvenio) ?? null,
       convenio.fecha_expiracion ?? new Date(),
       convenio.creador_id as number,
       convenio.fecha_creacion ?? new Date(),
@@ -97,6 +109,8 @@ export class PrismaConvenioRepository {
         contacto_nombre: convenioData.contactoNombre,
         telefono_contacto: convenioData.telefonoContacto,
         estado: convenioData.estado,
+        tipo: convenioData.tipo,
+        conexion: convenioData.conexion,
         fecha_expiracion: convenioData.fechaExpiracion
           ? new Date(convenioData.fechaExpiracion)
           : undefined,
@@ -112,7 +126,9 @@ export class PrismaConvenioRepository {
       updated.rubro ?? '',
       updated.contacto_nombre ?? '',
       updated.telefono_contacto ?? '',
-      updated.estado ?? '',
+      (updated.estado as EstadoConvenio) ?? convenioData.estado ?? null,
+      (updated.tipo as TipoConvenio) ?? convenioData.tipo ?? null,
+      (updated.conexion as ConexionConvenio) ?? convenioData.conexion ?? null,
       updated.fecha_expiracion ?? new Date(),
       updated.creador_id as number,
       updated.fecha_creacion ?? new Date(),
