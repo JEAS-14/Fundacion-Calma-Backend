@@ -18,7 +18,7 @@ COPY . .
 RUN npx prisma generate
 
 # 7. Exponer puerto (NestJS por defecto usa 3000)
-EXPOSE 3000
+EXPOSE 3005
 
 # 8. Comando para desarrollo
 CMD ["npm", "run", "start:dev"]
